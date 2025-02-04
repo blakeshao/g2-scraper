@@ -34,10 +34,10 @@ def analyze_reviews(csv_file: str) -> None:
         prompt = (
             f"Please analyze this batch of G2 reviews and provide insights in markdown format with:\n\n"
             "# Review Analysis Summary\n\n"
-            "## Positive Themes\n"
+            "## 10 Positive Themes\n"
             "- Key positive themes and patterns\n"
             "  - provide direct quotes from the reviews\n\n"
-            "## Negative Themes\n"
+            "## 10 Negative Themes\n"
             "- Key negative themes and patterns\n"
             "  - provide direct quotes from the reviews\n\n"
             "## Feature Requests & Pain Points\n"

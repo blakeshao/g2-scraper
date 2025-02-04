@@ -108,7 +108,7 @@ async def run(product_name: str):
         
         if reviews:
             df = pd.DataFrame(reviews)
-            filename = f'g2_reviews_{product_name}_{datetime.now().strftime("%Y-%m-%d")}.csv'
+            filename = f'csv/g2_reviews_{product_name}_{datetime.now().strftime("%Y-%m-%d")}.csv'
             df.to_csv(filename, index=False)
             print(f"Successfully saved {len(reviews)} reviews to {filename}")
         else:
