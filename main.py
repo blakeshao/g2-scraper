@@ -9,4 +9,4 @@ if __name__ == "__main__":
     filename = asyncio.run(run(sys.argv[1]))
     
     print(f"Saved reviews to {filename}")
-    analyze_reviews(filename)
+    analyze_reviews(filename, sys.argv[1])

@@ -27,46 +27,51 @@ class G2Scraper:
     async def get_product_reviews(self, product_url: str, num_pages: int = 1, product_name: str = "example-product") -> List[Dict]:
         reviews = []
         
-        # First visit the main product page
-        print("Visiting main page...")
-        await self.page.goto(product_url)
-        await asyncio.sleep(2)  # Short wait for page load
-        
-        for page in range(1, num_pages + 1):
-            print(f"Processing page {page}...")
+        try:    
+            # First visit the main product page
+            print("Visiting main page...")
+            await self.page.goto(product_url)
+            await asyncio.sleep(2)  # Short wait for page load
             
-            # Add timestamp to URL
-            timestamp = int(time.time() * 1000)
-            url = f"{product_url}?page={page}"
-            
-            await asyncio.sleep(5)  # Short delay between pages
-            
-            # Navigate to the page and wait for content to load
-            await self.page.goto(url)
-            
+            for page in range(1, num_pages + 1):
+                print(f"Processing page {page}...")
+                
+                # Add timestamp to URL
+                timestamp = int(time.time() * 1000)
+                url = f"{product_url}?page={page}"
+                
+                await asyncio.sleep(5)  # Short delay between pages
+                
+                # Navigate to the page and wait for content to load
+                await self.page.goto(url)
+                
 
+                
+                # Get the page content and parse with BeautifulSoup
+                content = await self.page.content()
+                print("found content")
+                soup = BeautifulSoup(content, 'html.parser')
+                review_elements = soup.find_all("div", class_="paper paper--white paper--box mb-2 position-relative border-bottom")
+                
+                if not review_elements:
+                    print(f"No reviews found on page {page}")
+                    return reviews
+                
+                for review in review_elements:
+                    review_data = {
+                        'text': self._extract_text(review),
+                        'rating': self._extract_rating(review),
+                        'date': self._extract_date(review),
+                        'reviewer': self._extract_reviewer(review)
+                    }
+                    print(review_data)
+                    reviews.append(review_data)
             
-            # Get the page content and parse with BeautifulSoup
-            content = await self.page.content()
-            print("found content")
-            soup = BeautifulSoup(content, 'html.parser')
-            review_elements = soup.find_all("div", class_="paper paper--white paper--box mb-2 position-relative border-bottom")
-            
-            if not review_elements:
-                print(f"No reviews found on page {page}")
-                return reviews
-            
-            for review in review_elements:
-                review_data = {
-                    'text': self._extract_text(review),
-                    'rating': self._extract_rating(review),
-                    'date': self._extract_date(review),
-                    'reviewer': self._extract_reviewer(review)
-                }
-                print(review_data)
-                reviews.append(review_data)
-        
-        return reviews
+            return reviews
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return reviews
+
 
 
     def _extract_text(self, review_element) -> str:
@@ -104,7 +109,10 @@ async def run(product_name: str):
         await asyncio.sleep(random.uniform(5, 10))
         
         product_url = f"https://www.g2.com/products/{product_name}/reviews"
-        reviews = await scraper.get_product_reviews(product_url, num_pages=100, product_name=product_name)
+        reviews = await scraper.get_product_reviews(product_url, num_pages=10, product_name=product_name)
+        
+        # Initialize filename variable
+        filename = None
         
         if reviews:
             df = pd.DataFrame(reviews)
@@ -114,15 +122,22 @@ async def run(product_name: str):
         else:
             print("No reviews were collected")
 
-        return filename
+        return filename if filename else None
             
     except Exception as e:
         print(f"An error occurred: {e}")
         raise
     finally:
-        await scraper.browser.close()
-        await scraper.playwright.stop()
-        await scraper.context.close()
+        # Add error handling for cleanup
+        try:
+            if scraper.browser:
+                await scraper.browser.close()
+            if scraper.playwright:
+                await scraper.playwright.stop()
+            if scraper.context:
+                await scraper.context.close()
+        except Exception as e:
+            print(f"Error during cleanup: {e}")
 
 if __name__ == "__main__":
     import sys

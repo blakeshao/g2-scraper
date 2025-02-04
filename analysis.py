@@ -9,7 +9,7 @@ dotenv.load_dotenv()
 # Initialize the OpenAI client
 client = OpenAI()
 
-def analyze_reviews(csv_file: str) -> None:
+def analyze_reviews(csv_file: str, product_name: str) -> None:
     """
     Analyze G2 reviews using OpenAI's API to generate insights and save as markdown.
     
@@ -36,13 +36,15 @@ def analyze_reviews(csv_file: str) -> None:
             "# Review Analysis Summary\n\n"
             "## 10 Positive Themes\n"
             "- Key positive themes and patterns\n"
-            "  - provide direct quotes from the reviews\n\n"
+            "  - provide up to 10 direct quotes from the reviews\n\n"
             "## 10 Negative Themes\n"
             "- Key negative themes and patterns\n"
-            "  - provide direct quotes from the reviews\n\n"
+            "  - provide up to 10 direct quotes from the reviews\n\n"
             "## Feature Requests & Pain Points\n"
             "- Most requested features\n"
-            "- Common pain points\n\n"
+            "  - provide up to 10 direct quotes from the reviews\n\n"
+            "- Common pain points\n"
+            "  - provide up to 10 direct quotes from the reviews\n\n"
             "## Overall Sentiment\n"
             "Summary of overall customer sentiment\n\n"
             f"Reviews analyzed:\n{reviews_text}"
@@ -70,8 +72,24 @@ def analyze_reviews(csv_file: str) -> None:
     
     # Combine all analyses
     final_prompt = (
-        f"Please synthesize these {len(all_analyses)} review analysis chunks into a single cohesive analysis:"
-        f"{'---'.join(all_analyses)}"
+        f"Please synthesize these {len(all_analyses)} review analysis chunks into a single cohesive analysis with the following format:"
+            "# Review Analysis Summary\n\n"
+            "## 10 Positive Themes\n"
+            "- Key positive themes and patterns\n"
+            "  - provide up to 10 direct quotes from the reviews\n\n"
+            "## 10 Negative Themes\n"
+            "- Key negative themes and patterns\n"
+            "  - provide up to 10 direct quotes from the reviews\n\n"
+            "## Feature Requests & Pain Points\n"
+            "- Most requested features\n"
+            "  - provide up to 10 direct quotes from the reviews\n\n"
+            "- Common pain points\n"
+            "  - provide up to 10 direct quotes from the reviews\n\n"
+            "## Overall Sentiment\n"
+            "Summary of overall customer sentiment\n\n"
+
+            f"Review analysis chunks:\n{'---'.join(all_analyses)}"
+            
     )
     
     try:
@@ -88,7 +106,7 @@ def analyze_reviews(csv_file: str) -> None:
         
         # Save analysis to markdown file
         timestamp = datetime.now().strftime("%Y-%m-%d")
-        output_file = f"review_analysis_{timestamp}.md"
+        output_file = f"analysis/review_analysis_{product_name}_{timestamp}.md"
         
         with open(output_file, "w") as f:
             f.write(f"# Analysis of {csv_file}\n")
@@ -102,9 +120,9 @@ def analyze_reviews(csv_file: str) -> None:
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) != 2:
-        print("Usage: python analysis.py <path_to_csv>")
+    if len(sys.argv) != 3:
+        print("Usage: python analysis.py <path_to_csv> <product_name>")
         sys.exit(1)
     
         
-    analyze_reviews(sys.argv[1])
+    analyze_reviews(sys.argv[1], sys.argv[2])
